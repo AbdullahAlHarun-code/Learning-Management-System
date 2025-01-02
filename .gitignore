@@ -1,0 +1,23 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+.env
+
+# React
+node_modules/
+build/
+dist/
+.env
+
+# General
+*.swp
+*.swo
+.DS_Store
+.idea/
+.vscode/
+*.iml
