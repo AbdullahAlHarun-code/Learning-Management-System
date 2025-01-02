@@ -21,3 +21,6 @@ dist/
 .idea/
 .vscode/
 *.iml
+
+# Ignore Source Code folder
+Source Code/
