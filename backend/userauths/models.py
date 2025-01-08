@@ -7,22 +7,23 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
     full_name = models.CharField(max_length=150)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    # is_active = models.BooleanField(default=True)
+    # is_staff = models.BooleanField(default=True)
     otp = models.CharField(unique=True, max_length=100, blank=True, null=True)
-    is_superuser = models.BooleanField(default=False)
+    refresh_token = models.CharField(max_length=1000, blank=True, null=True)
+    # is_superuser = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['username', 'password']
 
     def __str__(self):
         return self.email
     
     def save(self, *args, **kwargs):
         self.email = self.email.lower()
-        email_username, full_name= self.email.split('@')
+        email_username, _ = self.email.split('@')
         if self.full_name == '' or self.full_name == None:
             self.full_name = email_username
         if self.username == '' or self.username == None:
@@ -51,16 +52,26 @@ class Profile(models.Model):
         
     def save(self, *args, **kwargs):
         if self.full_name == '' or self.full_name == None:
-            self.full_name = self.user.username
+            if self.user.full_name:
+                self.full_name = self.user.full_name
+            else:
+                self.full_name = self.user.username
         return super(Profile, self).save(*args, **kwargs)
    
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        try:
+            instance.save()
+            Profile.objects.create(user=instance)
+        except Exception as e:
+            print(f"Error creating profile: {e}")
+
 
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
+
 
 post_save.connect(create_user_profile, sender=User)
 post_save.connect(save_user_profile, sender=User)
